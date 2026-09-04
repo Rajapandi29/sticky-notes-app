@@ -3,7 +3,7 @@ variable "project_name" {
 
 }
 variable "aws_region" {
-     type = "string
+     type = string
      default = "ap-south-1"
 }
 variable "vpc_cidr" {
