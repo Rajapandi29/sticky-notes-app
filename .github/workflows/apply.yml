@@ -1,0 +1,97 @@
+# apply.yml
+
+name: Terraform Apply
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "terraform/APPLY"
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REPOSITORY: sticky-notes-repo
+  ECS_CLUSTER: sticky-notes-cluster
+  ECS_SERVICE: sticky-notes-service
+
+jobs:
+  apply:
+    name: Build Push Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Get ECR Repository URI
+        run: |
+          ECR_URI=$(aws ecr describe-repositories \
+            --repository-names "$ECR_REPOSITORY" \
+            --region "$AWS_REGION" \
+            --query 'repositories[0].repositoryUri' \
+            --output text)
+
+          echo "ECR_URI=$ECR_URI" >> "$GITHUB_ENV"
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            -t "$ECR_URI:${GITHUB_SHA}" \
+            -t "$ECR_URI:latest" \
+            .
+
+      - name: Push Docker Image
+        run: |
+          docker push "$ECR_URI:${GITHUB_SHA}"
+          docker push "$ECR_URI:latest"
+
+      - name: Terraform Apply
+        working-directory: terraform
+        run: |
+          terraform apply \
+            -auto-approve \
+            -var="image_tag=${GITHUB_SHA}"
+
+      - name: Force ECS Deployment
+        run: |
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --force-new-deployment \
+            --region "$AWS_REGION"
+
+      - name: Wait for ECS Service
+        run: |
+          aws ecs wait services-stable \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE" \
+            --region "$AWS_REGION"
+
+      - name: Terraform Outputs
+        working-directory: terraform
+        run: terraform output
