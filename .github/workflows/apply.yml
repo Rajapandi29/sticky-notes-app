@@ -43,6 +43,14 @@ jobs:
         working-directory: terraform
         run: terraform validate
 
+      - name: Create ECR Repository
+        working-directory: terraform
+        run: |
+          terraform apply \
+            -auto-approve \
+            -target=module.ecr \
+            -var="image_tag=bootstrap"
+
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
