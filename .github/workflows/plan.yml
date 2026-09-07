@@ -1,5 +1,3 @@
-# pan.yml
-
 name: Terraform Plan
 
 on:
@@ -48,6 +46,4 @@ jobs:
 
       - name: Terraform Plan
         working-directory: terraform
-        run: |
-          terraform plan \
-            -out=tfplan
+        run: terraform plan -out=tfplan

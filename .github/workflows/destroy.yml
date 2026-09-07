@@ -1,5 +1,3 @@
-# destroy.yml
-
 name: Terraform Destroy
 
 on:
@@ -36,7 +34,7 @@ jobs:
 
       - name: Terraform Init
         working-directory: terraform
-        run: terraform init
+        run: terraform init -upgrade
 
       - name: Terraform Validate
         working-directory: terraform
@@ -48,4 +46,3 @@ jobs:
           terraform destroy \
             -auto-approve \
             -var="image_tag=bootstrap"
-            
