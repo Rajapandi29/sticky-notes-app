@@ -14,7 +14,7 @@ module "vpc" {
   private_subnets = var.private_subnets
 
   enable_nat_gateway = true
-  single_nat_gateway  = true
+  single_nat_gateway = true
 }
 
 ################################################################################
@@ -126,7 +126,7 @@ module "alb" {
         protocol            = "HTTP"
         matcher             = "200-399"
         interval            = 30
-        timeout              = 5
+        timeout             = 5
         healthy_threshold   = 2
         unhealthy_threshold = 3
       }
