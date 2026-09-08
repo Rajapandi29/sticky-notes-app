@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+    
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REPOSITORY: sticky-notes-repo
+  ECS_CLUSTER: sticky-notes-cluster
+  ECS_SERVICE: sticky-notes-service
 
 jobs:
   apply:
