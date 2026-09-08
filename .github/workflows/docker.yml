@@ -21,15 +21,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Create ECR Repository
-        run: |
-          terraform apply \
-            -auto-approve \
-            -target=module.ecr \
-            -var="image_tag=bootstrap"
-
+          
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
