@@ -1,25 +1,16 @@
-################################################################################
-# Application
-################################################################################
 
 output "name" {
   description = "Application name"
   value       = var.name
 }
 
-################################################################################
-# AWS Region
-################################################################################
 
 output "aws_region" {
   description = "AWS region"
   value       = var.aws_region
 }
 
-################################################################################
-# VPC
-################################################################################
-
+\
 output "vpc_id" {
   description = "VPC ID"
   value       = module.vpc.vpc_id
@@ -35,26 +26,30 @@ output "private_subnets" {
   value       = module.vpc.private_subnets
 }
 
-################################################################################
-# ECR
-################################################################################
 
 output "ecr_repository_name" {
-  description = "ECR repository name"
+  description = "eTicket ECR repository name"
   value       = module.ecr.repository_name
 }
 
 output "ecr_repository_url" {
-  description = "ECR repository URL"
+  description = "eTicket ECR repository URL"
   value       = module.ecr.repository_url
 }
 
-################################################################################
-# ALB
-################################################################################
+
+output "sticky_ecr_repository_name" {
+  description = "Sticky Notes ECR repository name"
+  value       = module.sticky_ecr.repository_name
+}
+
+output "sticky_ecr_repository_url" {
+  description = "Sticky Notes ECR repository URL"
+  value       = module.sticky_ecr.repository_url
+}
 
 output "alb_dns_name" {
-  description = "Application Load Balancer DNS name"
+  description = "Existing Application Load Balancer DNS name"
   value       = module.alb.dns_name
 }
 
@@ -63,23 +58,35 @@ output "alb_security_group_id" {
   value       = module.alb.security_group_id
 }
 
-################################################################################
-# ECS
-################################################################################
+
+output "eticket_target_group_arn" {
+  description = "eTicket target group ARN"
+  value       = module.alb.target_groups["app"].arn
+}
+
+output "sticky_target_group_arn" {
+  description = "Sticky Notes target group ARN"
+  value       = module.alb.target_groups["sticky"].arn
+}
+
 
 output "ecs_cluster_name" {
-  description = "ECS cluster name"
+  description = "Existing ECS cluster name"
   value       = "${var.name}-cluster"
 }
 
+
 output "ecs_service_name" {
-  description = "ECS service name"
+  description = "Existing eTicket ECS service name"
   value       = "${var.name}-service"
 }
 
-################################################################################
-# SNS
-################################################################################
+
+output "sticky_ecs_service_name" {
+  description = "Sticky Notes ECS service name"
+  value       = "sticky-notes-service"
+}
+
 
 output "sns_topic_arn" {
   description = "SNS topic ARN"

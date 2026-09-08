@@ -1,122 +1,69 @@
-################################################################################
-# Application Name
-################################################################################
-
 variable "name" {
-  description = "Application name"
+  description = "Existing eTicket application name"
   type        = string
 }
-
-################################################################################
-# AWS Region
-################################################################################
-
 variable "aws_region" {
-  description = "AWS region"
-  type        = string
+  type = string
 }
-
-################################################################################
-# VPC CIDR
-################################################################################
 
 variable "cidr" {
-  description = "VPC CIDR block"
-  type        = string
+  type = string
 }
-
-################################################################################
-# Availability Zones
-################################################################################
 
 variable "azs" {
-  description = "Availability zones"
-  type        = list(string)
+  type = list(string)
 }
-
-################################################################################
-# Public Subnets
-################################################################################
 
 variable "public_subnets" {
-  description = "Public subnet CIDRs"
-  type        = list(string)
+  type = list(string)
 }
-
-################################################################################
-# Private Subnets
-################################################################################
 
 variable "private_subnets" {
-  description = "Private subnet CIDRs"
-  type        = list(string)
+  type = list(string)
 }
 
-################################################################################
-# Container Port
-################################################################################
+
 
 variable "container_port" {
-  description = "Application container port"
-  type        = number
+  type    = number
+  default = 3000
 }
-
-################################################################################
-# Docker Image Tag
-################################################################################
 
 variable "image_tag" {
-  description = "Docker image tag"
+  description = "Sticky Notes Docker image tag"
   type        = string
+  default     = "bootstrap"
 }
 
-################################################################################
-# ECS Desired Count
-################################################################################
-
 variable "desired_count" {
-  description = "Number of ECS tasks"
-  type        = number
-
+  type    = number
   default = 1
 }
 
-################################################################################
-# ECS CPU
-################################################################################
-
 variable "cpu" {
-  description = "ECS CPU"
-  type        = number
-
+  type    = number
   default = 256
 }
 
-################################################################################
-# ECS Memory
-################################################################################
-
 variable "memory" {
-  description = "ECS memory"
-  type        = number
-
+  type    = number
   default = 512
 }
 
-################################################################################
-# SNS Email
-################################################################################
 
-variable "alert_email" {
-  description = "SNS email notification address"
+
+variable "eticket_image_tag" {
+  description = "Existing eTicket Docker image tag"
   type        = string
+  default     = "latest"
 }
 
-################################################################################
-# SNS Phone
-################################################################################
+
+
+variable "alert_email" {
+  type = string
+}
 
 variable "alert_phone" {
-  description = "SNS SMS notification phone number"
-  type        = string
+  type = string
 }
