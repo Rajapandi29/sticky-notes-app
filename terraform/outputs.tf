@@ -10,7 +10,7 @@ output "aws_region" {
   value       = var.aws_region
 }
 
-\
+
 output "vpc_id" {
   description = "VPC ID"
   value       = module.vpc.vpc_id
