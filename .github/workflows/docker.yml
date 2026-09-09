@@ -45,7 +45,6 @@ jobs:
             -t "$ECR_REGISTRY/$ECR_REPOSITORY:latest" \
             .
 
-
       - name: Push Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
