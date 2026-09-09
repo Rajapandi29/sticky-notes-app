@@ -10,7 +10,6 @@ env:
   ECR_REPOSITORY: stickynotes-app-repo
   ECS_CLUSTER: app-cluster
   ECS_SERVICE: stickynotes-app-service
-  ECS_TASK_DEFINITION: stickynotes-app-service
   CONTAINER_NAME: stickynotes
 
 jobs:
@@ -30,38 +29,56 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+
       - name: Build Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          docker build \
+        run: docker build \
             -t "$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA" \
             -t "$ECR_REGISTRY/$ECR_REPOSITORY:latest" \
             .
+
 
       - name: Push Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA"
-          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:latest"
 
-      - name: Render ECS Task Definition
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          docker push \
+            "$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA"
 
-      - name: Deploy ECS Task Definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+          echo "Pushing latest image"
+
+          docker push \
+            "$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+
+      - name: Register New Task Definition
+        id: register-task
+        run: |
+          TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://new-task-definition.json \
+            --region "$AWS_REGION" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+
+      - name: Deploy ECS
+        run: |
+          aws ecs update-service \
+            --cluster "$ECS_CLUSTER" \
+            --service "$ECS_SERVICE" \
+            --task-definition "$TASK_DEFINITION_ARN" \
+            --region "$AWS_REGION"
+
+
+      - name: Wait for ECS Service
+        run: |
+          aws ecs wait services-stable \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE" \
+            --region "$AWS_REGION"
+
