@@ -7,9 +7,9 @@ on:
 
 env:
   AWS_REGION: ap-south-1
-  ECR_REPOSITORY: sticky-notes-app
+  ECR_REPOSITORY: stickynotes-app-repo
   ECS_CLUSTER: app-cluster
-  ECS_SERVICE: sticky-notes-service
+  ECS_SERVICE: stickynotes-app-service
 
 jobs:
   build:
