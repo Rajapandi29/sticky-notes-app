@@ -10,6 +10,8 @@ env:
   ECR_REPOSITORY: stickynotes-app-repo
   ECS_CLUSTER: app-cluster
   ECS_SERVICE: stickynotes-app-service
+  ECS_TASK_DEFINITION: ecs-task-definition.json
+  CONTAINER_NAME: stickynotes-app
 
 jobs:
   build:
@@ -55,19 +57,31 @@ jobs:
           docker push \
             "$ECR_REGISTRY/$ECR_REPOSITORY:latest"
 
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+           task-definition: ${{ env.ECS_TASK_DEFINITION }}
+           container-name: ${{ env.CONTAINER_NAME }}
+           image: ${{ steps.build-image.outputs.image }}
 
-      - name: Deploy ECS
-        run: |
+     -  name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
+
+
+      - name: Update ECS Service
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |    
+          echo "Updating ECS Service: $ECS_SERVICE in Cluster: $ECS_CLUSTER"
           aws ecs update-service \
             --cluster "$ECS_CLUSTER" \
             --service "$ECS_SERVICE" \
-            --force-new-deployment \
-            --region "$AWS_REGION"
+            --force-new-deployment  
 
-
-      - name: Wait for ECS Service
-        run: |
-          aws ecs wait services-stable \
-            --cluster "$ECS_CLUSTER" \
-            --services "$ECS_SERVICE" \
-            --region "$AWS_REGION"
+          
