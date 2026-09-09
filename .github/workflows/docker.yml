@@ -11,7 +11,7 @@ env:
   ECS_CLUSTER: app-cluster
   ECS_SERVICE: stickynotes-app-service
   ECS_TASK_DEFINITION: ecs-task-definition.json
-  CONTAINER_NAME: stickynotes-app
+  CONTAINER_NAME: stickynotes
 
 jobs:
   build:
@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -29,59 +30,43 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-
       - name: Build Docker Image
+        id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          echo "ECR Registry: $ECR_REGISTRY"
-          echo "ECR Repository: $ECR_REPOSITORY"
+          IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA"
 
-          docker build \
-            -t "$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA" \
-            -t "$ECR_REGISTRY/$ECR_REPOSITORY:latest" \
-            .
+          echo "Building: $IMAGE"
+
+          docker build -t "$IMAGE" .
+          docker tag "$IMAGE" "$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
 
       - name: Push Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker push \
-            "$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:latest"
 
-          docker push \
-            "$ECR_REGISTRY/$ECR_REPOSITORY:latest"
-
-      - name: Fill in the new image ID in the Amazon ECS task definition
+      - name: Fill New Image in Task Definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-           task-definition: ${{ env.ECS_TASK_DEFINITION }}
-           container-name: ${{ env.CONTAINER_NAME }}
-           image: ${{ steps.build-image.outputs.image }}
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
 
-     -  name: Deploy Amazon ECS task definition
+      - name: Deploy New Task Definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-        task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: ${{ env.ECS_SERVICE }}
-        cluster: ${{ env.ECS_CLUSTER }}
-        wait-for-service-stability: true
-
-
-      - name: Update ECS Service
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |    
-          echo "Updating ECS Service: $ECS_SERVICE in Cluster: $ECS_CLUSTER"
-          aws ecs update-service \
-            --cluster "$ECS_CLUSTER" \
-            --service "$ECS_SERVICE" \
-            --force-new-deployment  
-
-          
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
