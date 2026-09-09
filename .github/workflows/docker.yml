@@ -7,9 +7,9 @@ on:
 
 env:
   AWS_REGION: ap-south-1
-  ECR_REPOSITORY: eticket-app-repo
+  ECR_REPOSITORY: sticky-notes-app
   ECS_CLUSTER: app-cluster
-  ECS_SERVICE: eticket-app-service
+  ECS_SERVICE: sticky-notes-service
 
 jobs:
   build:
