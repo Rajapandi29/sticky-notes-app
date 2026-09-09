@@ -11,7 +11,7 @@ env:
   ECS_CLUSTER: app-cluster
   ECS_SERVICE: stickynotes-app-service
   ECS_TASK_DEFINITION: stickynotes-app-service
-  CONTAINER_NAME: stickynotes
+  CONTAINER_NAME: stickynotes-app-container
 
 jobs:
   build:
