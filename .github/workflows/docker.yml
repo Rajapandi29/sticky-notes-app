@@ -10,8 +10,8 @@ env:
   ECR_REPOSITORY: stickynotes-app-repo
   ECS_CLUSTER: app-cluster
   ECS_SERVICE: stickynotes-app-service
-  ECS_TASK_DEFINITION: task-definition.json
-  CONTAINER_NAME: app
+  ECS_TASK_DEFINITION: stickynotes-app-service
+  CONTAINER_NAME: stickynotes
 
 jobs:
   build:
