@@ -38,7 +38,11 @@ jobs:
       - name: Build Docker Image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: docker build \
+        run: |
+          echo "ECR Registry: $ECR_REGISTRY"
+          echo "ECR Repository: $ECR_REPOSITORY"
+
+          docker build \
             -t "$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA" \
             -t "$ECR_REGISTRY/$ECR_REPOSITORY:latest" \
             .
