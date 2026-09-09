@@ -94,8 +94,4 @@ jobs:
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
 
-      - name: Deployment Completed
-        run: |
-          echo "StickyNotes deployment completed successfully"
-          echo "Image: $ECR_REPOSITORY:$GITHUB_SHA"
-          echo "Latest: $ECR_REPOSITORY:latest"
+     
